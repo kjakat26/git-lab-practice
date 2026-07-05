@@ -1,0 +1,113 @@
+# Git & GitHub Lab Training — Flow Summary
+
+## The Big Picture: The Real-World Loop
+
+```
+main (protected)
+  |
+  |-- checkout -b <branch>   → create a workspace for one task
+  |       |
+  |       |-- edit files
+  |       |-- add + commit   → save a checkpoint
+  |       |-- push           → upload branch to GitHub
+  |       |
+  |-- open Pull Request (PR) → propose merging into main
+  |-- review / resolve conflicts
+  |-- merge PR                → changes land on main
+  |
+  |-- checkout main + pull   → sync local main
+  |-- delete branch           → cleanup
+```
+
+**Golden rule:** never edit `main` directly. Every change goes through a branch → PR → merge.
+
+---
+
+## Phase 1 — Identity Setup
+
+| Command | Meaning |
+|---|---|
+| `git config --global user.name "Your Name"` | Sets the name attached to your commits (global = applies to all repos on this machine) |
+| `git config --global user.email "you@example.com"` | Sets the email attached to your commits |
+| `git config --global --list` | Shows all global settings, to verify they saved correctly |
+
+---
+
+## Phase 2 — Connecting to GitHub
+
+| Command | Meaning |
+|---|---|
+| `ssh-keygen -t ed25519 -C "you@example.com"` | Generates an SSH key pair for password-less authentication |
+| `cat ~/.ssh/id_ed25519.pub` | Prints your public key, to paste into GitHub settings |
+| `ssh -T git@github.com` | Tests that GitHub recognizes your SSH key |
+| **Personal Access Token (PAT)** | Alternative to SSH — used as a "password" when Git prompts for HTTPS auth. Generated under GitHub → Settings → Developer settings → Personal access tokens |
+
+---
+
+## Phase 3 — Getting the Repo Locally
+
+| Command | Meaning |
+|---|---|
+| `git clone <repo-url>` | Downloads a full copy of a GitHub repo to your machine |
+| `cd <repo-folder>` | Moves into the repo directory in your terminal |
+
+---
+
+## Phase 4 — The Core Branch → PR → Merge Loop
+
+| Command | Meaning |
+|---|---|
+| `git checkout -b <branch-name>` | Creates a new branch **and** switches to it — your isolated workspace for one task |
+| `git add <file>` | Stages a file — marks it as "ready to be included in the next commit" |
+| `git commit -m "message"` | Saves a checkpoint of staged changes, with a description |
+| `git push -u origin <branch-name>` | Uploads the branch to GitHub; `-u` links your local branch to the remote one so future `git push` alone works |
+| *(on GitHub)* Open Pull Request | Proposes merging your branch into `main`, so it can be reviewed |
+| *(on GitHub)* Merge Pull Request | Actually applies your branch's changes into `main` |
+| `git checkout main` | Switches back to the `main` branch locally |
+| `git pull` | Downloads and applies the latest changes from GitHub into your current local branch |
+| `git branch -d <branch-name>` | Deletes a local branch **only if** Git can confirm it was fully merged (safe delete) |
+| `git branch -D <branch-name>` | Force-deletes a local branch, even if Git isn't sure it was merged (use with care) |
+| `git push origin --delete <branch-name>` | Deletes a branch on GitHub (remote), not just locally |
+
+---
+
+## Phase 5 — Merge Conflicts
+
+A conflict happens when **two branches change the exact same line(s)** of a file, and Git can't automatically decide which version is correct.
+
+| Command | Meaning |
+|---|---|
+| `git pull origin main` | Pulls `main`'s latest changes into your current branch — this is what triggers a conflict check |
+| `git status` | Shows which files are conflicted ("both modified") |
+| *(manually edit the file)* | Remove `<<<<<<<`, `=======`, `>>>>>>>` markers and decide the final content |
+| `git add <file>` | Marks the conflict as resolved for that file |
+| `git commit` | Completes the merge with a merge commit (Git pre-fills the message) |
+| `git push` | Uploads the resolved merge to GitHub, clearing the conflict on the PR |
+
+**Conflict marker anatomy:**
+```
+<<<<<<< HEAD
+your local version
+=======
+the incoming version (e.g. from main)
+>>>>>>> main
+```
+
+---
+
+## Key Lessons Learned Along the Way
+
+1. **Identity must be set before your first commit** — `user.name` and `user.email` are required.
+2. **PAT vs SSH** — both are valid ways to authenticate; PAT is used like a password over HTTPS, SSH uses key-based auth.
+3. **`git branch -d` warnings after squash/rebase merges are usually harmless** — the content is merged, but the commit hash differs from what Git expects, so it just double-checks with a warning.
+4. **A "no conflict" result usually means your branch already included the other change** (branched too late) or the edits didn't overlap (different lines). Order of operations matters: branch first, then diverge.
+5. **Fast-forward merges** happen when there's nothing to reconcile — Git just moves the pointer forward, no merge commit needed.
+6. **Real conflicts** only occur when two branches edit the *same line* **and** neither branch has seen the other's version yet.
+
+---
+
+## Suggested Next Practice Phases
+
+- **Issues**: create a GitHub Issue, reference it in a commit message (`Fixes #1`) to auto-close it on merge.
+- **.gitignore**: practice excluding files (e.g. `*.log`) from being tracked.
+- **GitHub Actions (CI)**: add a simple workflow file that runs automatically on every push/PR.
