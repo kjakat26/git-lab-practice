@@ -111,3 +111,31 @@ the incoming version (e.g. from main)
 - **Issues**: create a GitHub Issue, reference it in a commit message (`Fixes #1`) to auto-close it on merge.
 - **.gitignore**: practice excluding files (e.g. `*.log`) from being tracked.
 - **GitHub Actions (CI)**: add a simple workflow file that runs automatically on every push/PR.
+
+
+
+Actual Steps:
+1.) Clone the file:
+git clone <URL>
+
+2.) Creat a branch: git checkout -b <branchname> 
+3.) Enter "git show" to check current branch
+4.) Edit the target file
+5.) git add notes.txt
+6.) git commit -m "Update notes"
+7.) Check the remote name of the target GitHub: git remote -v
+8.) Push the branch to the target GitHub: git push <origin_or_result of "git remove -v" testbranch
+9.) Check the PR now on the Github
+10.) Proceed with the PR and then merge
+11.) Once, perform clean up. On local use:
+git checkout main
+git branch -a
+git pull origin main
+git branch -d testbranch(Delete the branch locally)
+git push <origin_or_result of "git remove -v"> --delete testbranch(Delete branch on the GitHub UI)
+
+For revert:
+1.) Run "git log --oneline --merges" to display logs/history
+2.) Run "git revert -m 1 96dc58d" where "96dc58d" is the target PR with stable state
+
+
